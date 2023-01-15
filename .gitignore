@@ -1,0 +1,8 @@
+*.env
+**./vscode
+__pycache__/
+secrets.toml
+.DS_Store
+dist/
+build/
+wheels/
