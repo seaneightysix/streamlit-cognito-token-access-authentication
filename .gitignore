@@ -6,3 +6,5 @@ secrets.toml
 dist/
 build/
 wheels/
+
+**.egg-info

@@ -1,8 +1,10 @@
 import streamlit as st
 from .decode_verify_jwt import verify_jwt
 import requests
-import base64 from jose import jwk, jwt
-import os import json
+import base64 
+from jose import jwk, jwt
+import os 
+import json
 
 # Read constants from secrets file
 COGNITO_USERPOOL_ID = st.secrets["COGNITO_USERPOOL_ID"]
@@ -17,7 +19,7 @@ APP_URI = st.secrets["APP_URI"]
 REGION = st.secrets["REGION"]
 HTTP_PROXY = st.secrets["HTTP_PROXY"]
 
-class Authentication:
+class AuthenticationLogin:
     """
     :param type: string: type of authentication: user or token
 
@@ -27,18 +29,27 @@ class Authentication:
 
         if "authenticated" not in st.session_state:
             st.session_state.authenticated = None
-        if "username" not in st.session_state:
-            st.session_state.username = None
+        if "logout" not in st.session_state:
+            st.session_state.logout = False
+        if "useremail" not in st.session_state:
+            st.session_state.useremail = None
         if "auth_type" not in st.session_state:
-            st.session_state.authenticated = type
-        self.access_token = ""
-        if type== "user":
-            self.html_button_login = None
-            self.html_button_logout = None
-            self.login_link = None
-            self.logout_link = None
-            self.html_css_login = None
-            self.initiate_user_buttons()
+            st.session_state.auth_type = type
+        self.html_button_login = None
+        self.html_button_logout = None
+        self.login_link = None
+        self.logout_link = None
+        self.html_css_login = None
+        self.initiate_user_buttons()
+        
+        if HTTP_PROXY != "":
+            self.proxies = {
+                "http": HTTP_PROXY,
+                "https": HTTP_PROXY
+            }
+        else:
+            self.proxies = ""
+
 
     def get_env_variables(self, access_token):
         """
@@ -51,23 +62,21 @@ class Authentication:
             "HOST_APP_CLIENT_ID": HOST_APP_CLIENT_ID,
             "REGION": REGION,
             "HTTP_PROXY": HTTP_PROXY,
-            "token": access_token
         }
         self.access_token = access_token
         return env_vars
 
-    def cognito_authenticate(self, auth_code=None, access_token=None):
+    def cognito_authenticate(self, auth_code=None):
         """
         if auth_code, then makes a post request call to cognito login endpoint
         if access_token, then makes a get call to cognito token endpoint
         """
-
         url = ""
         headers = None
-        body = None
+        data = None
         response = None
 
-        if st.session_state.auth_type == "user" and auth_code != "":
+        if auth_code != "":
             with st.spinner(text="Signining in..."):
                 #Check how to set CLIENT_SECRET
                 if IS_CLIENT_SECRET:
@@ -100,11 +109,42 @@ class Authentication:
                     response = requests.post(url, headers, data)
                     self.update_response(response)
 
-        # use token endpoint
-        else:
-            if access_token is not None:
-                with st.spinner(text="Signining in..."):
-                    env_vars = self.get_env_variables(access_token)
+    def update_response(self, token_response):
+        user, is_in_group = self.user_token_decode(token_response)
+        if not is_in_group:
+            st.session_state.authenticated = False
+            st.session_state.logout = True
+            return
+        elif token_response.status_code != 200:
+            st.session_state.authenticated = False
+            st.session_state.logout = True
+            return
+        st.session_state.authenticated = True
+        st.session_state.logout = False
+        st.session_state.useremail = user
+        
+    
+    def user_token_decode(self, token_response):
+        user_identity = ""
+        is_in_group = False
+        decoded_token = ""
+        id_token = ""
+        try:
+            id_token = token_response.json()["id_token"]
+        except(KeyError, TypeError):
+            print(Exception)
+        if id_token != "":
+            decoded_token = jwt.decode(id_token, '', algorithms=['RS256'], audience=APP_CLIENT_ID, options={
+                "verify_signature": False,
+                "verify_iss": False,
+                "verify_sub": False,
+                "verify_at_hash": False
+            })
+            is_in_group = self.check_user_groups(decoded_token)
+            user_identity = decoded_token["email"]
+        return user_identity, is_in_group
+
+
 
 
     def get_auth_code(self):
@@ -161,3 +201,10 @@ class Authentication:
 
     def button_logout(self):
         return st.markdown(f"{self.html_button_logout}", unsafe_allow_html=True)
+
+    
+
+    def login_widget(self, form_name: str='Login'):
+        auth_code = self.get_auth_code()
+        self.cognito_authenticate(auth_code)
+        return st.session_state.authenticated, st.session_state.useremail
