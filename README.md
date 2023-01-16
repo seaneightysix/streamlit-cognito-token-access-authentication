@@ -13,7 +13,6 @@ pip install streamlit-cognito-token-access-authentication
 Your streamlit app will first show the Login widget for unauthenticated users:
 ![Login widget](./images/login_widget.png)
 
-
 Once a user has their access token authenticated, the full streamlit app will become accessible.
 
 ## AWS Cognito Prequisites
