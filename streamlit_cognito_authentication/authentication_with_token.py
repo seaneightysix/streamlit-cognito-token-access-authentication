@@ -19,7 +19,7 @@ class AuthenticationToken:
 
     """
 
-    def __init__(self, type):
+    def __init__(self):
 
         if "authenticated" not in st.session_state:
             st.session_state.authenticated = None
@@ -27,8 +27,6 @@ class AuthenticationToken:
             st.session_state.logout = False
         if "useremail" not in st.session_state:
             st.session_state.useremail = None
-        if "auth_type" not in st.session_state:
-            st.session_state.auth_type = type
         self.access_token = ""
 
         if HTTP_PROXY != "":
@@ -97,7 +95,6 @@ class AuthenticationToken:
                     self.update_response(response)
     
     def user_token_decode(self, token_response):
-        user_identity = ""
         is_in_group = False
         decoded_token = ""
         if token_response != "":

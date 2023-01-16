@@ -2,8 +2,9 @@ from setuptools import setup
 
 setup(
     name='streamlit-cognito-authentication',
-    version='0.1.3',    
-    description='Streamlit authentication using Cognito with 2 endpoint options: Token and UserInfo',
+    version='1.1.1',    
+    description="This is a library to authenticate users of a streamlit application that is embedded in a host application using AWS Cognito's access token.  A example use case would be an Angular application that has a streamlit app in an iframe. A user would first login to the host angular app and receive an access token.\
+    The user would then use this access token to sign in to the embedded streamlit app.",
     url='https://github.com/seaneightysix/streamlit-cognito-authentication',
     author='Sean Tasaki',
     author_email='sean.tasaki@gmail.com',

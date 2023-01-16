@@ -4,7 +4,7 @@ FROM python:3.9-slim
 WORKDIR /app
 COPY requirements.txt ./requirements.txt
 RUN pip3 install -r requirements.txt
-RUN pip install -i https://test.pypi.org/simple/ streamlit-cognito-authentication==0.1.1
+RUN pip install -i https://test.pypi.org/simple/ streamlit-cognito-authentication
 EXPOSE 8501
 COPY . /app
 ENTRYPOINT [ "streamlit", "run" ]

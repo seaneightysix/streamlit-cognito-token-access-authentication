@@ -2,40 +2,27 @@ import streamlit as st
 import time
 import pandas as pd
 import numpy as np
-from streamlit_cognito_authentication import AuthenticationLogin, AuthenticationToken
+from streamlit_cognito_authentication import AuthenticationToken
 
 st.set_page_config(page_title="Cognito and Streamlit Demo")
 
+### START streamlit_cognito_authentication code ###
 auth_placeholder = st.empty()
 with auth_placeholder.container():
-    if st.secrets["TYPE"] == 'user':
-        cognito_authenticate = AuthenticationLogin(st.secrets["TYPE"])
-    elif st.secrets["TYPE"] == 'token':
-        cognito_authenticate = AuthenticationToken(st.secrets["TYPE"])
-    if not st.session_state.authenticated:
-        if st.session_state.auth_type == "user":
-            button_html = cognito_authenticate.button_login()
-        
+
+    cognito_authenticate = AuthenticationToken()
+    if not st.session_state.authenticated:      
         authentication_status, username = cognito_authenticate.login_widget('Login')
-        if st.session_state.auth_type == "user":
-            if authentication_status == False:
-                st.error("Cognito sign-in unsuccessful")
-            elif authentication_status == None:
-                st.warning("User not signed in")
-        else:
-            if authentication_status == False:
-                st.error("Access token is not valid")
-            elif authentication_status == None:
-                st.warning("Please enter an access token")
+        if authentication_status == False:
+            st.error("Access token is not valid")
+        elif authentication_status == None:
+            st.warning("Please enter an access token")
 if st.session_state.authenticated:
     auth_placeholder.empty()
 
     auth_sidebar_placeholder = st.empty()
     with auth_sidebar_placeholder.container():
-        if st.session_state.auth_type == "user":
-            cognito_authenticate.button_logout()
-        else:
-            cognito_authenticate.logout("Logout")
+        cognito_authenticate.logout("Logout")
     if st.session_state.logout:
         auth_sidebar_placeholder.empty()
 ### END streamlit_cognito_authentication code ###
