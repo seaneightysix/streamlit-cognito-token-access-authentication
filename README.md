@@ -1,7 +1,7 @@
 # streamlit-cognito-token-access-authentication
 
 This is a library to authenticate users of a streamlit application that is embedded in a host application using AWS Cognito's access token. Normal Cognito sign in does not work in this use case because Cognito hosted UIs aren't allowed to be embedded in iframes due to security concerns.
-A example use case would be an Angular application that has a streamlit app in an iframe. A user would first login to the host angular app and receive an access token.\
+An example use case would be an Angular application that has a streamlit app in an iframe. A user would first login to the host angular app and receive an access token.\
 The user would then use this access token to sign in to the embedded streamlit app.
 
 Your streamlit app will first show the Login widget for unauthenticated users:
